@@ -1,3 +1,5 @@
+"use client"; // Add this line at the top of the file
+
 import { useState } from "react";
 import axios from "axios";
 
@@ -15,9 +17,9 @@ const PostForm = ({ fetchPosts }) => {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    fetchPosts();
-    setTitle("");
-    setContent("");
+    fetchPosts(); // Refresh the posts list after submission
+    setTitle(""); // Clear the title input
+    setContent(""); // Clear the content input
   };
 
   return (

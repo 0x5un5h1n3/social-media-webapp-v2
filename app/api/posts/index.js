@@ -1,5 +1,5 @@
-import dbConnect from "../../../utils/dbConnect";
-import Post from "../../../models/Post";
+import dbConnect from "../../../src/utils/dbConnect";
+import Post from "../../../src/models/Post";
 import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
