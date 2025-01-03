@@ -27,8 +27,17 @@ export default async function handler(req, res) {
         res.status(401).json({ message: "Invalid token" });
       }
       break;
+    case "PUT": // New case for liking a post
+      const { id } = req.query; // Get post ID from query
+      const post = await Post.findById(id);
+      if (!post) return res.status(404).json({ message: "Post not found" });
+
+      post.likes += 1; // Increment likes
+      await post.save();
+      res.status(200).json(post);
+      break;
     default:
-      res.setHeader("Allow", ["GET", "POST"]);
+      res.setHeader("Allow", ["GET", "POST", "PUT"]);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
