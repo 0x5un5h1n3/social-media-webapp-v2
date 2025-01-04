@@ -14,6 +14,13 @@ const Login = () => {
     try {
       const response = await axios.post("/api/auth/login", { email, password });
       localStorage.setItem("token", response.data.token);
+
+      // Store user ID in local storage
+      const userId = response.data.userId; // Get user ID from response
+      const userResponse = await axios.get(`/api/users/${userId}`); // Fetch user data using the user ID
+      localStorage.setItem("user", JSON.stringify(userResponse.data)); // Store user data
+
+      alert("Login successful");
       router.push("/posts"); // Redirect to posts page after login
     } catch (error) {
       alert("Error logging in");

@@ -1,5 +1,6 @@
 import dbConnect from "../../../src/utils/dbConnect";
 import Post from "../../../src/models/Post";
+import User from "../../../src/models/User"; // Import User model
 import jwt from "jsonwebtoken";
 
 export default async function handler(req, res) {
@@ -9,7 +10,10 @@ export default async function handler(req, res) {
 
   switch (method) {
     case "GET":
-      const posts = await Post.find().sort({ createdAt: -1 });
+      const posts = await Post.find()
+        .populate("userId", "username") // Populates the username
+        .sort({ createdAt: -1 });
+      console.log("Fetched posts:", posts); // Log the posts to see the structure
       res.status(200).json(posts);
       break;
     case "POST":
@@ -27,14 +31,25 @@ export default async function handler(req, res) {
         res.status(401).json({ message: "Invalid token" });
       }
       break;
-    case "PUT": // New case for liking a post
+    case "PUT": // Handle liking a post
       const { id } = req.query; // Get post ID from query
-      const post = await Post.findById(id);
-      if (!post) return res.status(404).json({ message: "Post not found" });
+      const { userId } = req.body; // Get user ID from request body
+      const postToUpdate = await Post.findById(id);
+      if (!postToUpdate)
+        return res.status(404).json({ message: "Post not found" });
 
-      post.likes += 1; // Increment likes
-      await post.save();
-      res.status(200).json(post);
+      // Check if the user has already liked the post
+      if (postToUpdate.likes.includes(userId)) {
+        // User has already liked the post, remove the like
+        postToUpdate.likes = postToUpdate.likes.filter(
+          (user) => user.toString() !== userId // Ensure toString for comparison
+        );
+      } else {
+        // User has not liked the post, add the like
+        postToUpdate.likes.push(userId);
+      }
+      await postToUpdate.save();
+      res.status(200).json(postToUpdate);
       break;
     default:
       res.setHeader("Allow", ["GET", "POST", "PUT"]);
