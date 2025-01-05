@@ -14,11 +14,19 @@ const Posts = () => {
 
   // Define the fetchPosts function
   const fetchPosts = async () => {
-    const token = localStorage.getItem("token");
-    const response = await axios.get("/api/posts", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setPosts(response.data);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("/api/posts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      // Redirect to login if unauthorized
+      if (error.response?.status === 401) {
+        router.push("/login");
+      }
+    }
   };
 
   // Fetch posts when the component mounts
@@ -36,6 +44,7 @@ const Posts = () => {
     localStorage.removeItem("user");
     setUsername(""); // Clear username
     setUser(null); // Clear user data
+    // router.push("/login");
   };
 
   return (
@@ -56,7 +65,7 @@ const Posts = () => {
         </>
       )}
       <PostsList posts={posts} fetchPosts={fetchPosts} user={user} />{" "}
-      {/* Pass user to PostsList */}
+      {/* Pass user to PostsList */}{" "}
     </div>
   );
 };

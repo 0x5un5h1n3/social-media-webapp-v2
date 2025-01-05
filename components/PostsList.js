@@ -1,28 +1,32 @@
 "use client"; // Add this line at the top of the file
 
 import axios from "axios";
-import { useEffect } from "react";
-import { formatDate } from "../utils/formatDate"; // Import the formatDate function
+import { formatDate } from "../utils/formatDate";
 
 const PostsList = ({ posts, fetchPosts, user }) => {
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
-    if (!user) return; // If user is not logged in, do nothing
+    if (!user) {
+      alert("You must be logged in to like a post");
+      return;
+    }
 
-    const userId = user._id; // Ensure to get the correct user ID
-    console.log(`Liking post with ID: ${postId} by user ID: ${userId}`); // Log the like action
     try {
       const response = await axios.put(
         `/api/posts?id=${postId}`,
-        { userId },
+        { userId: user._id },
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-      console.log("Like response:", response.data); // Log the response from the server
+
       fetchPosts(); // Refresh the posts list after liking
     } catch (error) {
-      console.error("Error liking post:", error); // Log any errors
+      console.error("Error liking post:", error);
+      alert("Error liking the post");
     }
   };
 
@@ -33,22 +37,39 @@ const PostsList = ({ posts, fetchPosts, user }) => {
         {posts.map((post) => (
           <li key={post._id}>
             <h3>{post.title}</h3>
+            {/* Display image */}
+            {post.image && (
+              <img
+                src={post.image}
+                alt={post.title}
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "400px",
+                  objectFit: "cover",
+                }}
+              />
+            )}
+
             <p>{post.content}</p>
+
             <p>
+              {/* Display username */}
               Posted by: {post.userId ? post.userId.username : "Unknown User"}
-            </p>{" "}
-            {/* Display username */}
-            <p>Created At: {formatDate(post.createdAt)}</p>{" "}
+            </p>
             {/* Display formatted creation time */}
-            <p>
-              Likes: {Array.isArray(post.likes) ? post.likes.length : 0}
-            </p>{" "}
-            {/* Ensure likes is an array */}
-            <button onClick={() => handleLike(post._id)}>
-              {Array.isArray(post.likes) && post.likes.includes(user?._id)
-                ? "Unlike"
-                : "Like"}
-            </button>
+            <p>Created At: {formatDate(post.createdAt)}</p>
+            {/* Display Likes count*/}
+            <p>Likes: {Array.isArray(post.likes) ? post.likes.length : 0}</p>
+
+            {user && (
+              <button onClick={() => handleLike(post._id)}>
+                {post.likes.some(
+                  (likedUserId) => likedUserId.toString() === user._id
+                )
+                  ? "Unlike"
+                  : "Like"}
+              </button>
+            )}
           </li>
         ))}
       </ul>
