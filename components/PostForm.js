@@ -2,6 +2,8 @@
 
 import { useState, useRef } from "react"; // Import useRef
 import axios from "axios";
+import toast from "react-hot-toast";
+import { FaImage, FaPaperPlane } from "react-icons/fa";
 
 const PostForm = ({ fetchPosts }) => {
   const [title, setTitle] = useState("");
@@ -14,7 +16,7 @@ const PostForm = ({ fetchPosts }) => {
     const token = localStorage.getItem("token"); // Retrieve the token
 
     if (!token) {
-      alert("You must be logged in to create a post.");
+      toast.error("You must be logged in to create a post.");
       return;
     }
 
@@ -32,7 +34,8 @@ const PostForm = ({ fetchPosts }) => {
           "Content-Type": "multipart/form-data", // Set content type for form data
         },
       });
-      alert("Post created successfully");
+
+      toast.success("Post created successfully");
       fetchPosts(); // Refresh the posts after creating a new one
       setTitle(""); // Clear the title input
       setContent(""); // Clear the content input
@@ -42,31 +45,47 @@ const PostForm = ({ fetchPosts }) => {
       }
     } catch (error) {
       console.error("Error creating post:", error);
-      alert("Error creating post");
+      toast.error("Error creating post");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Content"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        required
-      />
-      <input
-        type="file"
-        ref={fileInputRef} // Attach the ref to the file input
-        onChange={(e) => setImage(e.target.files[0])} // Set the image file
-      />
-      <button type="submit">Create Post</button>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white/40 backdrop-blur-lg rounded-xl p-4 shadow-md"
+    >
+      <div className="space-y-3">
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+        />
+        <textarea
+          placeholder="What's on your mind?"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200"
+        />
+        <div className="flex items-center space-x-3">
+          <input
+            type="file"
+            ref={fileInputRef} // Attach the ref to the file input
+            onChange={(e) => setImage(e.target.files[0])} // Set the image file
+            className="flex-grow text-sm file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 file:text-sm file:px-3 file:py-1"
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 transition-colors flex items-center"
+          >
+            <FaPaperPlane className="mr-2 w-4 h-4" />
+            Post
+          </button>
+        </div>
+      </div>
     </form>
   );
 };

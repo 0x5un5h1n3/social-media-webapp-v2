@@ -1,12 +1,31 @@
-import React from "react";
+"use client";
 
-const Home = () => {
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem("token");
+
+    // if (token) {
+    // If logged in, redirect to posts
+    router.push("/posts");
+    // } else {
+    //   // If not logged in, redirect to login
+    //   router.push("/login");
+    // }
+  }, []);
+
+  // Fallback UI while redirecting
   return (
-    <div>
-      <h1>Welcome to the Social Media App</h1>
-      <p>Please log in or register to continue.</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9F5F0] to-[#E8E4D9]">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold mb-4">Social Media Webapp</h1>
+        <p className="text-gray-600">Redirecting...</p>
+      </div>
     </div>
   );
-};
-
-export default Home;
+}

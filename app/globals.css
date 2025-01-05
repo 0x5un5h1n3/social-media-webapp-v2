@@ -2,20 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.22),
+    rgba(205, 205, 220, 0.25)
+  );
+  font-family: "Poppins", sans-serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.85); /* More opaque white */
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.1px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  @apply border-4 border-white/50 shrink-0 w-full rounded-3xl py-10 px-7;
+}
+
+.textbox {
+  @apply border-0 px-5 py-4 rounded-xl w-3/4 shadow-sm text-lg bg-gray-100;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-300;
+}
+
+.btn {
+  @apply border bg-indigo-500 w-3/4 py-4 rounded-lg text-gray-50 text-xl shadow-sm text-center;
+}
+
+.btn:hover {
+  background-color: #ff6a6a;
 }
