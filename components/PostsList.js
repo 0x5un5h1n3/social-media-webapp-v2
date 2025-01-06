@@ -68,8 +68,11 @@ const PostsList = ({ posts, fetchPosts, user }) => {
                   onClick={() => handleLike(post._id)}
                   className="flex items-center gap-1 text-gray-600 hover:text-red-500"
                 >
-                  {post.likes.some(
-                    (likedUserId) => likedUserId.toString() === user._id
+                  {post.likes &&
+                  Array.isArray(post.likes) &&
+                  post.likes.some(
+                    (likedUserId) =>
+                      likedUserId && likedUserId.toString() === user._id
                   ) ? (
                     <FaHeart className="text-red-500" />
                   ) : (

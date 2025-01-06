@@ -106,7 +106,7 @@ const Posts = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => router.push("/login")}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-gray-600 hover:text-red-500 transition-colors"
                 >
                   Please login to continue
                 </button>{" "}
