@@ -79,7 +79,9 @@ export async function POST(request: Request) {
 
   try {
     // Verify the token and extract the user ID
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
 
     // Parse the form data
     const { fields, files } = await parseMultipartFormData(request);
@@ -103,7 +105,10 @@ export async function POST(request: Request) {
     });
     await newPost.save();
 
-    return NextResponse.json(newPost);
+    // Populate the userId field
+    await newPost.populate("userId", "username");
+
+    return NextResponse.json(newPost, { status: 201 });
   } catch (error) {
     console.error("Post creation error:", error);
     return NextResponse.json(
@@ -123,31 +128,147 @@ export async function PUT(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id"); // Get post ID from query parameters
 
-  // Parse the request body
-  const { userId } = await request.json(); // Get user ID from request body
-
-  const postToUpdate = await Post.findById(id);
-
-  if (!postToUpdate) {
-    return NextResponse.json({ message: "Post not found" }, { status: 404 });
+  const token = request.headers.get("Authorization")?.split(" ")[1];
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  // Check if the user has already liked the post
-  const userIdString = userId.toString(); // Consistent type comparison
-  const isLiked = postToUpdate.likes.some(
-    (likedUserId) => likedUserId.toString() === userIdString
-  );
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+    const { fields, files } = await parseMultipartFormData(request);
 
-  if (isLiked) {
-    // User has already liked the post, remove the like
-    postToUpdate.likes = postToUpdate.likes.filter(
-      (likedUserId) => likedUserId.toString() !== userIdString
+    const postToUpdate = await Post.findById(id);
+
+    if (!postToUpdate) {
+      return NextResponse.json({ message: "Post not found" }, { status: 404 });
+    }
+
+    // Check if the user is the owner of the post
+    if (postToUpdate.userId.toString() !== decoded.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
+    }
+
+    // Update post details
+    postToUpdate.title = fields.title || postToUpdate.title;
+    postToUpdate.content = fields.content || postToUpdate.content;
+    postToUpdate.edited = true;
+    postToUpdate.editedAt = new Date();
+
+    // Handle image upload
+    if (files.image) {
+      postToUpdate.image = await saveUploadedFile(files.image);
+    }
+
+    await postToUpdate.save();
+    await postToUpdate.populate("userId", "username");
+
+    return NextResponse.json(postToUpdate);
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  await dbConnect();
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  const token = request.headers.get("Authorization")?.split(" ")[1];
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+    const { userId } = await request.json();
+
+    const postToLike = await Post.findById(id);
+    if (!postToLike) {
+      return NextResponse.json({ message: "Post not found" }, { status: 404 });
+    }
+
+    // Check if the user has already liked the post
+    const userIdString = userId.toString(); // Consistent type comparison
+
+    const isLiked = postToLike.likes.some(
+      (likedUserId) => likedUserId.toString() === userIdString
     );
-  } else {
-    // User has not liked the post, add the like
-    postToUpdate.likes.push(userId);
+
+    if (isLiked) {
+      // Remove like
+      postToLike.likes = postToLike.likes.filter(
+        (likedUserId) => likedUserId.toString() !== userIdString
+      );
+    } else {
+      // Add like
+      postToLike.likes.push(userId);
+    }
+
+    await postToLike.save();
+    await postToLike.populate("userId", "username");
+
+    return NextResponse.json(postToLike);
+  } catch (error) {
+    console.error("Error liking post:", error);
+    return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  await dbConnect();
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  const token = request.headers.get("Authorization")?.split(" ")[1];
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  await postToUpdate.save();
-  return NextResponse.json(postToUpdate);
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+
+    // Use findOneAndDelete instead of remove
+    const postToDelete = await Post.findOneAndDelete({
+      _id: id,
+      userId: decoded.id,
+    });
+
+    if (!postToDelete) {
+      return NextResponse.json(
+        { message: "Post not found or unauthorized" },
+        { status: 404 }
+      );
+    }
+
+    // Delete associated image file
+    if (postToDelete.image) {
+      const imagePath = path.join(process.cwd(), "public", postToDelete.image);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    return NextResponse.json(
+      { message: "Post deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    return NextResponse.json(
+      {
+        message: "Error deleting post",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
+  }
 }
