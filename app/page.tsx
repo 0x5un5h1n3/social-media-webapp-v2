@@ -8,6 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is already logged in
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const token = localStorage.getItem("token");
     router.push("/posts");
   }, [router]); // Add router to dependency array

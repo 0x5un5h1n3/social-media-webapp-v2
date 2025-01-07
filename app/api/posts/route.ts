@@ -183,6 +183,7 @@ export async function PATCH(request: Request) {
   }
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
       id: string;
     };

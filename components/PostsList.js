@@ -112,6 +112,7 @@ const PostsList = ({ posts, fetchPosts, user }) => {
           {/* Post Image */}
           {(post.image || (editingPostId === post._id && editedImage)) && (
             <div className="w-full aspect-[4/3] overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={
                   editingPostId === post._id && editedImage

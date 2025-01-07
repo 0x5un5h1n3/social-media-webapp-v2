@@ -96,14 +96,14 @@ const Login = () => {
 
               {/* Submit button */}
               <button type="submit" className="btn">
-                Let's Go
+                Let&apos;s Go
               </button>
             </div>
 
             {/* Register link */}
             <div className="text-center py-4">
               <span className="text-gray-500">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <a href="/register" className="text-[#ff3030]">
                   Register Now
                 </a>
