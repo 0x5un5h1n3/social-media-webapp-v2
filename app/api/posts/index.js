@@ -1,6 +1,5 @@
 import dbConnect from "../../../src/utils/dbConnect";
 import Post from "../../../src/models/Post";
-import User from "../../../src/models/User";
 import jwt from "jsonwebtoken";
 import formidable from "formidable"; // Import formidable for file uploads
 import fs from "fs"; // Import fs to handle file system operations

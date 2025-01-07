@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"; // Import useRef
 import axios from "axios";
 import toast from "react-hot-toast";
-import { FaImage, FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane } from "react-icons/fa";
 
 const PostForm = ({ fetchPosts }) => {
   const [title, setTitle] = useState("");

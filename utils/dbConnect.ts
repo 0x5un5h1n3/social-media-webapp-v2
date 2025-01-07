@@ -10,8 +10,12 @@ const dbConnect = async () => {
   } catch (error) {
     console.error("MongoDB connection error:", error);
     console.error("MongoDB URI:", process.env.MONGODB_URI);
-    console.error("MongoDB connection error details:", error.message);
-    throw new Error("Failed to connect to MongoDB");
+
+    // Safely handle error message
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    console.error("MongoDB connection error details:", errorMessage);
+    throw new Error(`Failed to connect to MongoDB: ${errorMessage}`);
   }
 };
 

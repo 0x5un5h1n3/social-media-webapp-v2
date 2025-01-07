@@ -9,15 +9,8 @@ export default function Home() {
   useEffect(() => {
     // Check if user is already logged in
     const token = localStorage.getItem("token");
-
-    // if (token) {
-    // If logged in, redirect to posts
     router.push("/posts");
-    // } else {
-    //   // If not logged in, redirect to login
-    //   router.push("/login");
-    // }
-  }, []);
+  }, [router]); // Add router to dependency array
 
   // Fallback UI while redirecting
   return (

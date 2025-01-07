@@ -1,0 +1,21 @@
+FROM node:23-bullseye-slim
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy entire project
+COPY . .
+
+# Install testing dependencies
+RUN npm install --save-dev jest @types/jest ts-jest axios
+
+# Copy test configuration
+COPY jest.config.js ./
+
+# Run tests
+CMD ["npm", "test"]
