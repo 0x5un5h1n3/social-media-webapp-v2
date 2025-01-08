@@ -26,6 +26,12 @@ jobs:
           node-version: "23"
           cache: "npm"
 
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
       - name: Install Dependencies
         run: npm ci
 
@@ -53,8 +59,22 @@ jobs:
           NODE_ENV: test
           CI: true
 
+      - name: Prepare Environment Files
+        run: |
+          echo "MONGODB_URI=mongodb://mongodb:27017/mydb" >> .env
+          echo "NODE_ENV=production" >> .env
+
       - name: Build Docker Image
         run: docker build -t social-media-webapp-v2 .
 
       - name: Docker Compose Build
         run: docker-compose build
+
+      - name: Docker Compose Validate
+        run: docker-compose config
+
+      - name: Docker Compose Up
+        run: docker-compose up -d
+
+      - name: Check Running Containers
+        run: docker ps
