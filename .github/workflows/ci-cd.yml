@@ -61,8 +61,50 @@ jobs:
 
       - name: Prepare Environment Files
         run: |
-          echo "MONGODB_URI=mongodb://mongodb:27017/mydb" >> .env
-          echo "NODE_ENV=production" >> .env
+          # Create .env.local with necessary variables
+          echo "MONGODB_URI=mongodb://mongodb:27017/mydb" > .env.local
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> .env.local
+          echo "NODE_ENV=production" >> .env.local
+
+          # Create .env for additional configurations if needed
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" > .env
+          echo "RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }}" >> .env
+
+      - name: Create Docker Compose Configuration
+        run: |
+          cat > docker-compose.yml << EOL
+          services:
+            nextjs-app:
+              build:
+                context: .
+                dockerfile: Dockerfile
+              container_name: social-media-webapp-v2-nextjs
+              ports:
+                - "3000:3000"
+              env_file:
+                - .env.local
+                - .env
+              environment:
+                - NODE_ENV=production
+              depends_on:
+                - mongodb
+
+            mongodb:
+              image: mongo:latest
+              container_name: social-media-webapp-v2-mongodb
+              ports:
+                - "27017:27017"
+              volumes:
+                - mongodb_data:/data/db
+
+          volumes:
+            mongodb_data:
+          EOL
+
+      - name: Verify Docker Compose File
+        run: |
+          echo "Docker Compose Configuration:"
+          cat docker-compose.yml
 
       - name: Build Docker Image
         run: docker build -t social-media-webapp-v2 .
@@ -78,3 +120,6 @@ jobs:
 
       - name: Check Running Containers
         run: docker ps
+
+      - name: Check Container Logs
+        run: docker-compose logs

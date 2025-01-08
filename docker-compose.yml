@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   nextjs-app:
     build:
@@ -10,7 +8,6 @@ services:
       - "3000:3000"
     env_file:
       - .env.local
-      - .env
     environment:
       - NODE_ENV=production
     depends_on:
