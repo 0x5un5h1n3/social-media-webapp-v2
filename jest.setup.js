@@ -3,6 +3,11 @@ const path = require("path");
 const axios = require("axios");
 const mongoose = require("mongoose");
 
+// Modify MongoDB URI for GitHub Actions environment
+if (process.env.CI) {
+  process.env.MONGODB_URI = "mongodb://localhost:27017/testdb";
+}
+
 // Load environment variables from .env.local file only if MONGODB_URI is not already set
 if (!process.env.MONGODB_URI) {
   dotenv.config({
@@ -34,6 +39,7 @@ beforeAll(async () => {
     console.log("Database connected for testing");
   } catch (error) {
     console.error("Test setup failed:", error);
+    console.error("Full error details:", error);
     throw error;
   }
 });
