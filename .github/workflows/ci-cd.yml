@@ -15,11 +15,17 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd mongosh --eval "db.adminCommand('ping')"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "23"
@@ -31,12 +37,26 @@ jobs:
       - name: Lint Code
         run: npm run lint
 
+      - name: Wait for MongoDB to be ready
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 27017; then
+              echo "MongoDB is up!"
+              break
+            fi
+            echo "Waiting for MongoDB..."
+            sleep 1
+          done
+
       - name: Run Unit Tests
         run: npm test
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_URI: mongodb://mongodb:27017/testdb
+          ATLAS_MONGODB_URI: ${{ secrets.MONGODB_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           RECAPTCHA_SECRET_KEY: ${{ secrets.RECAPTCHA_SECRET_KEY }}
+          NODE_ENV: test
+          CI: true
 
       - name: Build Docker Image
         run: docker build -t social-media-webapp-v2 .

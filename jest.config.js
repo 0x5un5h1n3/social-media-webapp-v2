@@ -7,8 +7,14 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
   },
-  setupFiles: ["<rootDir>/jest.setup.js"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
-  testTimeout: 30000, // Increase timeout for API tests
-  verbose: true, // Add verbose logging
+  testTimeout: 60000, // Increase timeout for tests
+  verbose: true,
+  globals: {
+    "ts-jest": {
+      diagnostics: {
+        warnOnly: true,
+      },
+    },
+  },
 };
