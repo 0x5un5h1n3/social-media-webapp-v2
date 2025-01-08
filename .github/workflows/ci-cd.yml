@@ -93,7 +93,7 @@ jobs:
               image: mongo:latest
               container_name: social-media-webapp-v2-mongodb
               ports:
-                - "27017:27017"
+                - "27018:27017"  # Change external port to avoid conflict
               volumes:
                 - mongodb_data:/data/db
 
